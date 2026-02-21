@@ -91,6 +91,15 @@ set -a; source .env; set +a
 npm run test:geocode:negative
 ```
 
+Run positive and negative tests in parallel (using different k6 API ports):
+
+```bash
+set -a; source .env; set +a
+REPORT_DIR=reports k6 run --address 127.0.0.1:6566 tests/sdet_geocode_api_test.ts &
+REPORT_DIR=reports k6 run --address 127.0.0.1:6567 tests/sdet_geocode_negative_api_test.ts &
+wait
+```
+
 Generate local HTML + JUnit + JSON reports:
 
 ```bash
