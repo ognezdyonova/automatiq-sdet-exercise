@@ -3,6 +3,7 @@ import { getCity, getRequiredEnv } from "../src/config/env.ts";
 import type { GeocodeResponse } from "../src/models/geocode.ts";
 import { extractCoordinates } from "../src/services/geocodeService.ts";
 import { assertHttpStatus } from "../src/assertions/httpAssertions.ts";
+import { buildSummaryOutputs } from "../src/reporting/summary.ts";
 
 export const options = {
   scenarios: {
@@ -24,4 +25,8 @@ export default function () {
   const { latitude, longitude } = extractCoordinates(body, city);
 
   console.log(`City: ${city} Longitude: ${longitude} Latitude: ${latitude}`);
+}
+
+export function handleSummary(data: unknown) {
+  return buildSummaryOutputs("sdet_geocode_api_test", data);
 }

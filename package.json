@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck",
     "test:geocode": "k6 run tests/sdet_geocode_api_test.ts",
-    "test:geocode:negative": "k6 run tests/sdet_geocode_negative_api_test.ts"
+    "test:geocode:negative": "k6 run tests/sdet_geocode_negative_api_test.ts",
+    "test:geocode:report": "mkdir -p reports && REPORT_DIR=reports k6 run tests/sdet_geocode_api_test.ts",
+    "test:geocode:negative:report": "mkdir -p reports && REPORT_DIR=reports k6 run tests/sdet_geocode_negative_api_test.ts"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.46.0",

@@ -3,6 +3,7 @@ import { getRequiredEnv } from "../src/config/env.ts";
 import type { GeocodeResponse } from "../src/models/geocode.ts";
 import { assertGeocodeApiStatus } from "../src/assertions/geocodeAssertions.ts";
 import { assertHttpStatus } from "../src/assertions/httpAssertions.ts";
+import { buildSummaryOutputs } from "../src/reporting/summary.ts";
 
 const includeZeroResultsScenario = Boolean(__ENV.GOOGLE_API_KEY);
 
@@ -46,4 +47,8 @@ export function unknownCityScenario() {
 
   const body = response.json() as GeocodeResponse;
   assertGeocodeApiStatus(body, "ZERO_RESULTS", `unknown city "${city}" scenario`);
+}
+
+export function handleSummary(data: unknown) {
+  return buildSummaryOutputs("sdet_geocode_negative_api_test", data);
 }

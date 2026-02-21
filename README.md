@@ -16,6 +16,8 @@ Basic k6 API testing framework in TypeScript for the Google Geocode API.
 │   │   └── env.ts
 │   ├── models
 │   │   └── geocode.ts
+│   ├── reporting
+│   │   └── summary.ts
 │   └── services
 │       └── geocodeService.ts
 ├── tests
@@ -88,6 +90,19 @@ set -a; source .env; set +a
 npm run test:geocode:negative
 ```
 
+Generate local HTML + JUnit + JSON reports:
+
+```bash
+set -a; source .env; set +a
+npm run test:geocode:report
+```
+
+Generated files:
+
+- `reports/sdet_geocode_api_test.html`
+- `reports/sdet_geocode_api_test.junit.xml`
+- `reports/sdet_geocode_api_test.summary.json`
+
 Run quality gates:
 
 ```bash
@@ -108,6 +123,7 @@ This repository includes `.github/workflows/run-k6-geocode.yml` with `workflow_d
 6. Configure repository secret `GOOGLE_API_KEY` before running:
    - **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**
 7. Run the workflow and review logs for test output.
+8. Download artifact `k6-geocode-reports` for HTML/JUnit/JSON outputs.
 
 ## CI quality gates
 
@@ -115,6 +131,15 @@ This repository includes `.github/workflows/run-k6-geocode.yml` with `workflow_d
 - Executes:
   - `npm run lint`
   - `npm run typecheck`
+
+## Reporting
+
+- Local: HTML/JUnit/JSON generated via k6 `handleSummary` in `reports/`
+- CI: workflow uploads report artifacts and publishes JUnit in GitHub Checks
+
+## Allure
+
+Yes, you can use Allure with k6, but it usually requires a custom xk6 extension or a conversion step from generated results. For this repo, JUnit + HTML is lighter and more stable in CI. If you want, I can add an Allure pipeline next (with extension build or JUnit-to-Allure conversion).
 
 ## Notes
 
