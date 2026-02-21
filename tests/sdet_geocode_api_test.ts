@@ -13,6 +13,10 @@ export const options = {
       iterations: 1,
     },
   },
+  thresholds: {
+    checks: ["rate==1"],
+    http_req_failed: ["rate==0"],
+  },
 };
 
 export default function () {

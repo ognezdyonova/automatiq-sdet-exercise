@@ -60,6 +60,7 @@ cp .env.example .env
 ```
 
 2. Edit `.env` and set your real `GOOGLE_API_KEY` and preferred `CITY`.
+   - If a value contains spaces, keep it quoted. Example: `CITY="Los Angeles"`.
 
 ## Run locally
 
