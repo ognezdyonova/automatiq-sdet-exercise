@@ -1,0 +1,9 @@
+{
+  "name": "automatiq-sdet-exercise",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Basic k6 API testing framework in TypeScript for Google Geocode API.",
+  "scripts": {
+    "test:geocode": "k6 run tests/sdet_geocode_api_test.ts"
+  }
+}
