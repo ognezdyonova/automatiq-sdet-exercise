@@ -8,10 +8,6 @@ on:
         required: true
         default: "Los Angeles"
         type: string
-      google_api_key:
-        description: "Google Geocode API auth token"
-        required: true
-        type: string
 
 jobs:
   k6-geocode:
@@ -21,12 +17,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint and typecheck
+        run: npm run check
+
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
+
+      - name: Validate API key secret
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          if [ -z "$GOOGLE_API_KEY" ]; then
+            echo "Missing repository secret GOOGLE_API_KEY"
+            exit 1
+          fi
+
+      - name: Mask API key in logs
+        run: echo "::add-mask::${{ secrets.GOOGLE_API_KEY }}"
 
       - name: Run geocode test
         env:
           CITY: ${{ github.event.inputs.city }}
-          GOOGLE_API_KEY: ${{ github.event.inputs.google_api_key }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           k6 run tests/sdet_geocode_api_test.ts
