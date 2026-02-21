@@ -137,10 +137,6 @@ This repository includes `.github/workflows/run-k6-geocode.yml` with `workflow_d
 - Local: HTML/JUnit/JSON generated via k6 `handleSummary` in `reports/`
 - CI: workflow uploads report artifacts and publishes JUnit in GitHub Checks
 
-## Allure
-
-Yes, you can use Allure with k6, but it usually requires a custom xk6 extension or a conversion step from generated results. For this repo, JUnit + HTML is lighter and more stable in CI. If you want, I can add an Allure pipeline next (with extension build or JUnit-to-Allure conversion).
-
 ## Notes
 
 - The test fails early if `GOOGLE_API_KEY` is not provided.
