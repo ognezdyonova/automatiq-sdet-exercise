@@ -1,17 +1,9 @@
-import http from "k6/http";
-import { check, fail } from "k6";
-
-type GeocodeResponse = {
-  status: string;
-  results: Array<{
-    geometry: {
-      location: {
-        lat: number;
-        lng: number;
-      };
-    };
-  }>;
-};
+import { geocodeByCity } from "../src/clients/googleGeocodeClient.ts";
+import { getCity, getRequiredEnv } from "../src/config/env.ts";
+import type { GeocodeResponse } from "../src/models/geocode.ts";
+import { extractCoordinates } from "../src/services/geocodeService.ts";
+import { assertHttpStatus } from "../src/assertions/httpAssertions.ts";
+import { buildSummaryOutputs } from "../src/reporting/summary.ts";
 
 export const options = {
   scenarios: {
@@ -21,37 +13,24 @@ export const options = {
       iterations: 1,
     },
   },
+  thresholds: {
+    checks: ["rate==1"],
+    http_req_failed: ["rate==0"],
+  },
 };
 
 export default function () {
-  const city = __ENV.CITY || "Los Angeles";
-  const apiKey = __ENV.GOOGLE_API_KEY;
-
-  if (!apiKey) {
-    fail("Missing GOOGLE_API_KEY environment variable.");
-  }
-
-  const url = "https://maps.googleapis.com/maps/api/geocode/json";
-  const response = http.get(
-    `${url}?address=${encodeURIComponent(city)}&key=${encodeURIComponent(apiKey)}`
-  );
-
-  const statusOk = check(response, {
-    "response status is 200": (r) => r.status === 200,
-  });
-
-  if (!statusOk) {
-    fail(`Expected status 200 but received ${response.status}`);
-  }
+  const city = getCity();
+  const apiKey = getRequiredEnv("GOOGLE_API_KEY");
+  const response = geocodeByCity(city, apiKey);
+  assertHttpStatus(response, 200);
 
   const body = response.json() as GeocodeResponse;
-
-  if (!body.results || body.results.length === 0) {
-    fail(`No geocode results returned for city: ${city}`);
-  }
-
-  const latitude = body.results[0].geometry.location.lat;
-  const longitude = body.results[0].geometry.location.lng;
+  const { latitude, longitude } = extractCoordinates(body, city);
 
   console.log(`City: ${city} Longitude: ${longitude} Latitude: ${latitude}`);
+}
+
+export function handleSummary(data: unknown) {
+  return buildSummaryOutputs("sdet_geocode_api_test", data);
 }

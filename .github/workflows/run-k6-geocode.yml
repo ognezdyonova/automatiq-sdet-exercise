@@ -1,5 +1,9 @@
 name: Run k6 Geocode Test
 
+permissions:
+  contents: read
+  checks: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,10 +11,6 @@ on:
         description: "City to geocode (example: Los Angeles)"
         required: true
         default: "Los Angeles"
-        type: string
-      google_api_key:
-        description: "Google Geocode API auth token"
-        required: true
         type: string
 
 jobs:
@@ -21,12 +21,56 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint and typecheck
+        run: npm run check
+
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
+
+      - name: Validate API key secret
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          if [ -z "$GOOGLE_API_KEY" ]; then
+            echo "Missing repository secret GOOGLE_API_KEY"
+            exit 1
+          fi
+
+      - name: Mask API key in logs
+        run: echo "::add-mask::${{ secrets.GOOGLE_API_KEY }}"
+
+      - name: Create reports directory
+        run: mkdir -p reports
 
       - name: Run geocode test
         env:
           CITY: ${{ github.event.inputs.city }}
-          GOOGLE_API_KEY: ${{ github.event.inputs.google_api_key }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          REPORT_DIR: reports
         run: |
           k6 run tests/sdet_geocode_api_test.ts
+
+      - name: Upload k6 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-geocode-reports
+          path: reports/
+          if-no-files-found: error
+
+      - name: Publish JUnit test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: k6 Geocode JUnit
+          path: reports/*.junit.xml
+          reporter: java-junit
+          fail-on-error: false
